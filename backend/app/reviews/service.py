@@ -1,7 +1,11 @@
 import json
+import logging
+
+from postgrest.exceptions import APIError
 
 from app.database.database import supabase
-from app.reviews.schemas import ReviewResponse
+
+logger = logging.getLogger(__name__)
 
 
 def _as_list(value) -> list[str]:
@@ -13,6 +17,21 @@ def _as_list(value) -> list[str]:
     return []
 
 
+def _normalize(row: dict, saved: bool = True) -> dict:
+    return {
+        "id": row.get("id"),
+        "review_text": row.get("review_text"),
+        "sentiment": row.get("sentiment"),
+        "rating": row.get("rating"),
+        "summary": row.get("summary"),
+        "topics": _as_list(row.get("topics")),
+        "pros": _as_list(row.get("pros")),
+        "cons": _as_list(row.get("cons")),
+        "created_at": row.get("created_at"),
+        "saved": saved,
+    }
+
+
 def save_review(
     review_text: str,
     sentiment: str,
@@ -22,25 +41,33 @@ def save_review(
     pros: list[str],
     cons: list[str],
 ) -> dict:
+    analysis = {
+        "review_text": review_text,
+        "sentiment": sentiment,
+        "rating": rating,
+        "summary": summary,
+        "topics": topics,
+        "pros": pros,
+        "cons": cons,
+    }
+
+    try:
+        response = supabase.table("reviews").insert(analysis).execute()
+        return _normalize(response.data[0])
+    except APIError as exc:
+        logger.warning(
+            "Could not save review to database (returning analysis only): %s",
+            exc,
+        )
+        return _normalize(analysis, saved=False)
+
+
+def list_reviews(limit: int = 20) -> list[dict]:
     response = (
         supabase.table("reviews")
-        .insert(
-            {
-                "review_text": review_text,
-                "sentiment": sentiment,
-                "rating": rating,
-                "summary": summary,
-                "topics": topics,
-                "pros": pros,
-                "cons": cons,
-            }
-        )
+        .select("*")
+        .order("created_at", desc=True)
+        .limit(limit)
         .execute()
     )
-
-    saved = response.data[0]
-    saved["topics"] = _as_list(saved.get("topics"))
-    saved["pros"] = _as_list(saved.get("pros"))
-    saved["cons"] = _as_list(saved.get("cons"))
-
-    return {field: saved.get(field) for field in ReviewResponse.model_fields}
+    return [_normalize(row) for row in response.data]

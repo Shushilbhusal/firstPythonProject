@@ -5,17 +5,19 @@ class ReviewCreate(BaseModel):
     review_text: str = Field(
         ...,
         min_length=3,
-        description="Customer review text"
+        max_length=5000,
+        description="Customer review text",
     )
 
 
 class ReviewResponse(BaseModel):
-    id: int
+    id: int | None = None
     review_text: str
-    sentiment: str | None
-    rating: int | None
-    summary: str | None
-    topics: list[str]
-    pros: list[str]
-    cons: list[str]
-    created_at: str
+    sentiment: str | None = None
+    rating: int | None = None
+    summary: str | None = None
+    topics: list[str] = Field(default_factory=list)
+    pros: list[str] = Field(default_factory=list)
+    cons: list[str] = Field(default_factory=list)
+    created_at: str | None = None
+    saved: bool = True
