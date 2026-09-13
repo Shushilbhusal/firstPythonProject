@@ -34,6 +34,8 @@ export async function analyzeReview(
       data,
     );
 
+    console.log("Received response from analyzeReview:", response.data);
+
     return response.data;
   } catch (error) {
     const detail = detailFrom(error);

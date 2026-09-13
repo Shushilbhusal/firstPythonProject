@@ -16,6 +16,7 @@ export function ReviewForm() {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    console.log("Submitting review for analysis:", reviewText);
 
     const trimmedReview = reviewText.trim();
 
