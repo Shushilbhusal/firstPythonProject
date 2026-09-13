@@ -14,6 +14,7 @@ router = APIRouter(
 @router.post("/analyze", response_model=ReviewResponse)
 def analyze_customer_review(review: ReviewCreate):
     try:
+        # print("Analyzing review:", review.review_text)
         analysis = analyze_review(review.review_text)
     except (RuntimeError, ValueError) as exc:
         raise HTTPException(
