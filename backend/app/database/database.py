@@ -1,13 +1,12 @@
-import sqlite3
+from supabase import create_client, Client
 
 from app.config.settings import settings
 
 
-def get_connection():
-    connection = sqlite3.connect(
-        settings.DATABASE_URL.replace("sqlite:///", "")    ## it wiill create a database file in the backend directory if it does not exist
-    )
+if not settings.SUPABASE_URL or not settings.SUPABASE_KEY:
+    raise RuntimeError("SUPABASE_URL and SUPABASE_KEY must be set in .env")
 
-    connection.row_factory = sqlite3.Row
-
-    return connection
+supabase: Client = create_client(
+    settings.SUPABASE_URL,
+    settings.SUPABASE_KEY,
+)

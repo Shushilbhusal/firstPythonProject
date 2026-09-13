@@ -1,18 +1,19 @@
 def create_review_prompt(review_text: str) -> str:
     return f"""
-Analyze the following customer review.
+Analyze the following customer review and return ONLY valid JSON.
 
 Review:
 {review_text}
 
-Return the following information:
+Return the JSON in exactly this shape:
+{{
+  "sentiment": "one of: positive, negative, neutral",
+  "rating": 1-5,
+  "summary": "short summary",
+  "topics": ["..."],
+  "pros": ["..."],
+  "cons": ["..."]
+}}
 
-1. Sentiment
-2. Rating from 1 to 5
-3. Short summary
-4. Main topics
-5. Pros
-6. Cons
-
-Keep the response structured and easy to parse.
+Do not include anything outside the JSON object.
 """

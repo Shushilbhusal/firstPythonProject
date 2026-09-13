@@ -1,7 +1,6 @@
 from fastapi import FastAPI
-
-from app.database.models import create_reviews_table
 from app.reviews.router import router as reviews_router
+from fastapi.middleware.cors import CORSMiddleware
 
 
 app = FastAPI(
@@ -11,12 +10,15 @@ app = FastAPI(
 )
 
 
-
-## runs code when the server starts.  runs code when the server starts.
-@app.on_event("startup")
-def startup():
-    create_reviews_table()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "*",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(reviews_router)
 
